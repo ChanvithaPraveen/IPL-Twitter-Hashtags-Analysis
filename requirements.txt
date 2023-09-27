@@ -1,6 +1,6 @@
-pandas
-matplotlib
-seaborn
-numpy
-re
-
+pandas~=1.4.4
+plotly~=5.9.0
+fastapi~=0.103.1
+streamlit~=1.27.0
+numpy~=1.26.0
+folium~=0.14.0
