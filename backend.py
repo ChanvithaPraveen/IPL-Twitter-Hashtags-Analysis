@@ -47,11 +47,13 @@ import plotly.express as px
 app = FastAPI()
 
 # Load your DataFrame
-df = pd.read_csv('df1_with_datetime.csv')
-
+df = pd.read_csv('df1_with_datetime.csv')#, index=False)
+# start_date = '2020-10-10'
+# end_date = '2020-10-11'
 # Define a FastAPI endpoint to filter and create the bubble map
 @app.get("/generate_bubble_map/")
 async def generate_bubble_map(start_date: str = Query(...), end_date: str = Query(...)):
+# def generate_bubble_map(start_date, end_date):
     # Convert start_date and end_date to datetime objects
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
@@ -61,24 +63,31 @@ async def generate_bubble_map(start_date: str = Query(...), end_date: str = Quer
     filtered_df = df[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
     print(f"start_date: {start_date}, type: {type(start_date)}")
     print(f"end_date: {end_date}, type: {type(end_date)}")
+    # print(filtered_df.columns)
 
-    # Group the filtered DataFrame by city without aggregating other columns
-    grouped_df = filtered_df.groupby('city')
+    # # Create a new DataFrame with unique cities and all other columns
+    # grouped_df = filtered_df.groupby('city').first().reset_index()
+    # grouped_df['temp_population'] = grouped_df.groupby('city')['city'].transform('count')
+    # print(grouped_df)
 
-    # Create temp_df including 'city' and 'population'
-    temp_df = grouped_df['city', 'population'].sum().reset_index()
+    # Group by 'city' and count rows
+    grouped_df = filtered_df.groupby('city').size().reset_index(name='count')
 
-    # Check if 'city' column exists before dropping it
-    if 'city' in temp_df.columns:
-        temp_df = temp_df.merge(grouped_df.first(), on='city')
+    # Step 4: Add 'Latitude', 'Longitude', 'population', and 'country' columns to 'temp_city_df'
+    grouped_df = grouped_df.merge(
+        df[['city', 'Latitude', 'Longitude', 'population', 'country']].drop_duplicates(),
+        on='city',
+        how='left'
+    )
 
+    print(grouped_df)
     # Create a bubble map using Plotly Express
     fig = px.scatter_geo(
-        temp_df,
+        grouped_df,
         lat='Latitude',
         lon='Longitude',
         hover_data=['city', 'population'],
-        size='population',
+        size='count',
         projection='natural earth',
         title='City Bubble Map',
     )
@@ -88,11 +97,14 @@ async def generate_bubble_map(start_date: str = Query(...), end_date: str = Quer
         showcoastlines=True,
         coastlinecolor="grey",
         showland=True,
-        landcolor="dark blue",
+        landcolor="dark red",
     )
 
     # Save the bubble map as an HTML file
-    fig.write_html('bubble_map.html')
+    fig.write_html('bubble_map7.html')
 
-    return {'message': 'Bubble map generated successfully'}
+    print({'message': 'Bubble map generated successfully'})
+    print(fig)
+    # return fig
 
+# generate_bubble_map(start_date, end_date)

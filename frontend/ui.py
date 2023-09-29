@@ -96,7 +96,7 @@
 import streamlit as st
 import datetime
 import requests
-
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="The Ramsey Highlights", layout="wide")
 st.markdown(
@@ -120,7 +120,20 @@ st.markdown(f'''
     </style>
 ''',unsafe_allow_html=True)
 
+# Apply custom CSS to remove padding and margins
+st.markdown(
+    """
+    <style>
+    .stSidebar img {
+        padding: 0px;
+        margin: 0px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
+st.sidebar.image('assets/ipl_analyzer_logo.svg', width=400)
 st.title("IPL Twitter Data Analyzing Dashboard")
 
 today = datetime.date.today()
@@ -153,7 +166,7 @@ if st.button("Generate Bubble Map"):
     response = requests.get(f"http://localhost:8000/generate_bubble_map/?start_date={start_date_str}&end_date={end_date_str}")
 
     if response.status_code == 200:
-        st.success("Bubble map generated successfully.")
+        st.success("Bubble map generated successfully!")
     else:
         st.error("Error generating the bubble map.")
 
@@ -170,3 +183,7 @@ with st.sidebar:
         "Choose a shipping method",
         ("Standard (5-15 days)", "Express (2-5 days)")
     )
+
+HtmlFile = open("../bubble_map7.html", 'r', encoding='utf-8')
+source_code = HtmlFile.read()
+components.html(source_code, height=800)
