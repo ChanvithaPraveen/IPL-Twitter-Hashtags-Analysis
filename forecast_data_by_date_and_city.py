@@ -5,6 +5,9 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 import datetime
 import numpy as np
+from fastapi import FastAPI, Query
+
+app2 = FastAPI()
 
 # Load your dataset (assuming it's in a CSV file)
 data = pd.read_csv("unique_dates_cities_df.csv")
@@ -79,8 +82,24 @@ def predict_count_for_date_and_city(date, city):
     return prediction[0]
 
 
-# Example usage:
-date_to_predict = datetime.datetime(2020, 11, 15)  # Replace with the desired date
-city_to_predict = "york"  # Replace with the desired city
-predicted_count = predict_count_for_date_and_city(date_to_predict, city_to_predict)
-print(f"Predicted count for {date_to_predict} in {city_to_predict}: {predicted_count}")
+# @app2.get("/predict_future_tweet_count/")
+def predict_future_tweet_count(predict_date: str, select_city: str):
+    print(predict_date)
+    # Your prediction logic here
+    print({"message": "Prediction result"})
+    # Convert the string to a datetime object
+    date_obj = datetime.datetime.strptime(predict_date, "%Y-%m-%d")
+
+    # Extract year, month, and day as integers
+    year = date_obj.year
+    month = date_obj.month
+    day = date_obj.day
+
+    print(year, month, day)
+
+    date_to_predict = datetime.datetime(year,month,day)  # Replace with the desired date
+    city_to_predict = select_city  # Replace with the desired city
+    predicted_count = predict_count_for_date_and_city(date_to_predict, city_to_predict)
+    print(f"Predicted count for {date_to_predict} in {city_to_predict}: {predicted_count}")
+    return predicted_count
+

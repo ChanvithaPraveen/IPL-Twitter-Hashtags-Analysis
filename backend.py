@@ -37,9 +37,6 @@
 # # fig.write_html('bubble_map.html')
 
 
-
-
-
 from fastapi import FastAPI, Query
 import pandas as pd
 import plotly.express as px
@@ -47,7 +44,7 @@ import plotly.express as px
 app = FastAPI()
 
 # Load your DataFrame
-df = pd.read_csv('df1_with_datetime.csv')#, index=False)
+df = pd.read_csv('df1_with_datetime.csv')
 # start_date = '2020-10-10'
 # end_date = '2020-10-11'
 # Define a FastAPI endpoint to filter and create the bubble map
@@ -104,7 +101,47 @@ async def generate_bubble_map(start_date: str = Query(...), end_date: str = Quer
     fig.write_html('bubble_map7.html')
 
     print({'message': 'Bubble map generated successfully'})
-    print(fig)
+    # print(fig)
     # return fig
 
 # generate_bubble_map(start_date, end_date)
+
+@app.get("/generate_city_chart/")
+async def generate_city_chart(start_date: str = Query(...), end_date: str = Query(...)):
+    # Convert start_date and end_date to datetime objects
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    # Assuming 'datetime' column contains date and time as strings
+    df['datetime'] = pd.to_datetime(df['datetime'])
+    # Perform the comparison using Timestamp objects
+    filtered_df = df[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
+    print(f"start_date: {start_date}, type: {type(start_date)}")
+    print(f"end_date: {end_date}, type: {type(end_date)}")
+
+    # Group by 'city' and count rows
+    grouped_df = filtered_df.groupby('city').size().reset_index(name='count')
+
+    # Create the Pie chart
+    # fig = px.pie(grouped_df, values='count', names='city', title='City Distribution')
+
+    # Create a bar chart using Plotly Express
+    fig = px.bar(grouped_df, x='city', y='count', title='City-wise Count')
+    fig.update_xaxes(title='City')
+    fig.update_yaxes(title='Count')
+
+    # Save the bubble map as an HTML file
+    fig.write_html('city_chart.html')
+
+    print({'message': 'Bubble map generated successfully'})
+
+
+from forecast_data_by_date_and_city import predict_future_tweet_count
+
+
+@app.post("/predict_future_tweet_count/")
+async def predict(predict_date: str = Query(...), select_city: str = Query(...)):
+    # Your prediction logic here
+    # print({"message": "Prediction result"})
+    predicted_count = predict_future_tweet_count(predict_date, select_city)
+    print(predicted_count)
+    return predicted_count
