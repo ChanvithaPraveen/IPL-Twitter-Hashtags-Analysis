@@ -45,8 +45,8 @@ app = FastAPI()
 
 # Load your DataFrame
 df = pd.read_csv('df1_with_datetime.csv')
-# start_date = '2020-10-10'
-# end_date = '2020-10-11'
+start_date = '2020-10-10'
+end_date = '2020-10-20'
 # Define a FastAPI endpoint to filter and create the bubble map
 @app.get("/generate_bubble_map/")
 async def generate_bubble_map(start_date: str = Query(...), end_date: str = Query(...)):
@@ -132,7 +132,46 @@ async def generate_city_chart(start_date: str = Query(...), end_date: str = Quer
     # Save the bubble map as an HTML file
     fig.write_html('city_chart.html')
 
-    print({'message': 'Bubble map generated successfully'})
+    print({'message': 'City Chart generated successfully'})
+
+
+@app.get("/generate_line_chart/")
+async def generate_line_chart(start_date: str = Query(...), end_date: str = Query(...)):
+    # Convert start_date and end_date to datetime objects
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    # Assuming 'datetime' column contains date and time as strings
+    df['datetime'] = pd.to_datetime(df['datetime'])
+    # Perform the comparison using Timestamp objects
+    filtered_df = df[(df['datetime'] >= start_date) & (df['datetime'] <= end_date)]
+    print(f"start_date: {start_date}, type: {type(start_date)}")
+    print(f"end_date: {end_date}, type: {type(end_date)}")
+
+    # Group by 'city' and count rows
+    grouped_df = filtered_df.groupby('city').size().reset_index(name='count')
+
+    # Group by 'city' and count rows
+    grouped_df = filtered_df.groupby(['city', filtered_df['datetime'].dt.date]).size().reset_index(name='count')
+
+    # Create a line plot using Plotly Express
+    fig = px.line(grouped_df, x='datetime', y='count', color='city',
+                  labels={'count': 'Tweet Count', 'datetime': 'Date'},
+                  title='Tweet Count by City Over Time')
+
+    # Customize the appearance of the plot
+    fig.update_layout(xaxis_title_font=dict(size=18), yaxis_title_font=dict(size=18),
+                      xaxis_tickangle=-45, xaxis_tickfont=dict(size=14),
+                      yaxis_tickfont=dict(size=14), legend_title=dict(text='City'))
+
+    # Display the plot in Streamlit
+    # fig.show()
+
+    # Save the bubble map as an HTML file
+    fig.write_html('line_chart.html')
+
+    print({'message': 'Line chart generated successfully'})
+
+# generate_line_chart(start_date, end_date)
 
 
 from forecast_data_by_date_and_city import predict_future_tweet_count
