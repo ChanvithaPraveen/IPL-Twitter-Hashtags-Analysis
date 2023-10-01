@@ -145,8 +145,8 @@ add_selectbox = st.sidebar.selectbox(
 # Using "with" notation
 with st.sidebar:
     add_radio = st.radio(
-        "Choose a shipping method",
-        ("Standard (5-15 days)", "Express (2-5 days)")
+        "Choose a Theme Mode",
+        ("Dark Theme", "Light Theme")
     )
 
 if add_selectbox == "Past Data":
@@ -221,7 +221,7 @@ if add_selectbox == "Past Data":
 
         if response.status_code == 200:
             st.success("Line Chart generated successfully!")
-            HtmlFile = open("../line_chart.html", 'r', encoding='utf-8')
+            HtmlFile = open("../line_chart1.html", 'r', encoding='utf-8')
             source_code = HtmlFile.read()
             components.html(source_code, height=800)
 

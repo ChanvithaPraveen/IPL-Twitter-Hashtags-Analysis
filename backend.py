@@ -167,7 +167,7 @@ async def generate_line_chart(start_date: str = Query(...), end_date: str = Quer
     # fig.show()
 
     # Save the bubble map as an HTML file
-    fig.write_html('line_chart.html')
+    fig.write_html('line_chart1.html')
 
     print({'message': 'Line chart generated successfully'})
 
