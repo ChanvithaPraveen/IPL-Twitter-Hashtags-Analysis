@@ -88,12 +88,17 @@
 #
 #
 #
+import threading
+import time
 
+import folium
+import numpy as np
 import streamlit as st
 import datetime
 import requests
 import streamlit.components.v1 as components
 import pandas as pd
+import plotly.express as px
 
 st.set_page_config(page_title="The Ramsey Highlights", layout="wide")
 st.markdown(
@@ -130,7 +135,18 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+
 df = pd.read_csv('../unique_dates_cities_df.csv')
+df2 = pd.read_csv('../df1_cleaned_final.csv')
+
 # Assuming you have a DataFrame named df with a 'city' column
 unique_cities = df['city'].unique().tolist()
 
@@ -139,15 +155,15 @@ st.sidebar.image('assets/ipl_analyzer_logo.svg', width=400)
 # Using object notation
 add_selectbox = st.sidebar.selectbox(
     "How would you like to Analyze?",
-    ("Past Data", "Forecast Data")
+    ("Past Data", "Forecast Data", "Real-Time Data")
 )
 
-# Using "with" notation
+# Create a radio button in the sidebar to select the theme
 with st.sidebar:
-    add_radio = st.radio(
-        "Choose a Theme Mode",
-        ("Dark Theme", "Light Theme")
-    )
+    theme_mode = st.radio("Choose a Theme Mode", ("Light Theme", "Dark Theme"))
+    if theme_mode == "Light Theme":
+        [theme] = ["light"]
+
 
 if add_selectbox == "Past Data":
     st.title("Analyzing Historical IPL Data")
@@ -272,3 +288,10 @@ if add_selectbox == "Forecast Data":
             st.write(f"There will be {int(prediction_result)} users tweet on {predict_date} in {select_city.title()}")
         else:
             st.error(f"error {predict_date} & {select_city}")
+
+
+if add_selectbox == "Real-Time Data":
+    st.title("Real-Time IPL Data")
+
+
+
