@@ -100,7 +100,7 @@ import streamlit.components.v1 as components
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="The Ramsey Highlights", layout="wide")
+st.set_page_config(page_title="IPL Tweets Analysis", layout="wide")
 st.markdown(
     """
     <style>
