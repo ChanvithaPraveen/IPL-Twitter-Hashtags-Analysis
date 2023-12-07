@@ -88,17 +88,12 @@
 #
 #
 #
-import threading
-import time
-
-import folium
-import numpy as np
+import base64
 import streamlit as st
 import datetime
 import requests
 import streamlit.components.v1 as components
 import pandas as pd
-import plotly.express as px
 
 st.set_page_config(page_title="IPL Tweets Analysis", layout="wide")
 st.markdown(
@@ -155,7 +150,7 @@ st.sidebar.image('assets/ipl_analyzer_logo.svg', width=400)
 # Using object notation
 add_selectbox = st.sidebar.selectbox(
     "How would you like to Analyze?",
-    ("Past Data", "Forecast Data", "Real-Time Data")
+    ("Past Macro-Data", "Past Micro-Data", "Forecast Data", "Real-Time Data")
 )
 
 # Create a radio button in the sidebar to select the theme
@@ -165,8 +160,26 @@ with st.sidebar:
         [theme] = ["light"]
 
 
-if add_selectbox == "Past Data":
-    st.title("Analyzing Historical IPL Data")
+if add_selectbox == "Past Macro-Data":
+    # Add a nice background color
+    page_bg_img = '''
+    <style>
+    [data-testid="stAppViewContainer"] {
+        background-image: url("https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+        background-size: cover;
+    }
+    [data-testid="stHeader"] {
+        background-color: rgba(0, 0, 0, 0);
+    }
+
+    [data-testid="stToolbar"] {
+        right: 2rem;
+    }
+    </style>
+    '''
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+    st.title("Analyzing Past Macro-Data")
 
     today = datetime.date.today()
     tomorrow = today + datetime.timedelta(days=1)
@@ -242,8 +255,26 @@ if add_selectbox == "Past Data":
             components.html(source_code, height=800)
 
 if add_selectbox == "Forecast Data":
+    # Add a nice background color
+    page_bg_img = '''
+        <style>
+        [data-testid="stAppViewContainer"] {
+            background-image: url("https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+            background-size: cover;
+        }
+        [data-testid="stHeader"] {
+            background-color: rgba(0, 0, 0, 0);
+        }
+
+        [data-testid="stToolbar"] {
+            right: 2rem;
+        }
+        </style>
+        '''
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
     # Display the Forecast Data screen/page
-    st.title("Predict Future IPL Data")
+    st.title("Forecast Future-Data")
 
     today = datetime.date.today()
 
@@ -290,8 +321,83 @@ if add_selectbox == "Forecast Data":
             st.error(f"error {predict_date} & {select_city}")
 
 
-if add_selectbox == "Real-Time Data":
-    st.title("Real-Time IPL Data")
+if add_selectbox == "Past Micro-Data":
+    # Add a nice background color
+    page_bg_img = '''
+        <style>
+        [data-testid="stAppViewContainer"] {
+            background-image: url("https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+            background-size: cover;
+        }
+        [data-testid="stHeader"] {
+            background-color: rgba(0, 0, 0, 0);
+        }
+
+        [data-testid="stToolbar"] {
+            right: 2rem;
+        }
+        </style>
+        '''
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+    st.title("Analyzing Past Micro-Data")
+
+    # Sidebar for column selection using checkboxes
+    selected_columns = st.multiselect("Select Columns to Display", df2.columns.tolist())
+
+    filtered_df = df2[selected_columns]
+
+    # Search keyword input
+    search_keyword = st.text_input("Search Keyword")
+
+    # Filter DataFrame based on selected columns and search keyword
+    if selected_columns:
+        filtered_df = df2[
+            df2[selected_columns].astype(str).apply(lambda x: x.str.contains(search_keyword, case=False)).any(axis=1)]
+    else:
+        filtered_df = df2[df2.astype(str).apply(lambda x: x.str.contains(search_keyword, case=False)).any(axis=1)]
+
+    # Single date selection
+    selected_date = st.date_input("Select Date")
+
+    # Filter DataFrame based on selected columns and single date
+    if selected_columns:
+        filtered_df = df2[
+            (df2[selected_columns].astype(str).apply(lambda x: x.str.contains(search_keyword, case=False)).any(
+                axis=1)) &
+            (df2['day'] == selected_date.day) &
+            (df2['month'] == selected_date.month) &
+            (df2['year'] == selected_date.year)]
+    else:
+        filtered_df = df2[
+            (df2.astype(str).apply(lambda x: x.str.contains(search_keyword, case=False)).any(axis=1)) &
+            (df2['day'] == selected_date.day) &
+            (df2['month'] == selected_date.month) &
+            (df2['year'] == selected_date.year)]
+
+    # Display the filtered DataFrame with dynamically selected columns
+    st.subheader("Filtered DataFrame:")
+    st.dataframe(filtered_df[selected_columns] if selected_columns else filtered_df)
+
+    # Export to CSV button
+    if st.button("Export to CSV"):
+        # Create a CSV file
+        csv_filename = "exported_data.csv"
+        csv_file = filtered_df.to_csv(index=False).encode('utf-8')
+
+        # Provide a download link for the CSV file
+        b64 = base64.b64encode(csv_file).decode()
+        st.download_button(
+            label="Download CSV",
+            data=csv_file,
+            file_name="exported_data.csv",
+            key="download_csv",
+            help="Click to download the CSV file.",
+        )
+
+
+
+
 
 
 
