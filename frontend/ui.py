@@ -154,10 +154,11 @@ add_selectbox = st.sidebar.selectbox(
 )
 
 # Create a radio button in the sidebar to select the theme
-with st.sidebar:
-    theme_mode = st.radio("Choose a Theme Mode", ("Light Theme", "Dark Theme"))
-    if theme_mode == "Light Theme":
-        [theme] = ["light"]
+# with st.sidebar:
+    # theme_mode = st.radio("Choose a Theme Mode", ("Light Theme", "Dark Theme"))
+    # if theme_mode == "Light Theme":
+    #     [theme] = ["light"]
+
 
 
 if add_selectbox == "Past Macro-Data":
